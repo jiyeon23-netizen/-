@@ -120,7 +120,13 @@ export default function Admin() {
           <h1 className="text-3xl font-serif tracking-widest text-brand-accent">STUDIO ACCESS</h1>
           
           <button 
-            onClick={() => login()}
+            onClick={async () => {
+              try {
+                await login();
+              } catch (e) {
+                alert('로그인 팝업을 열 수 없습니다. 브라우저의 팝업 차단 설정을 확인하거나 Firebase 콘솔에서 도메인이 승인되었는지 확인해주세요.');
+              }
+            }}
             className="w-full py-5 text-[10px] tracking-[0.5em] bg-black text-white hover:bg-brand-accent transition-all font-bold font-sans rounded-sm"
           >
             GOOGLE AUTHENTICATION
