@@ -182,6 +182,41 @@ const DEFAULT_SETTINGS: SiteSettings = {
   projectLabelZone: 'ZONE'
 };
 
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
 export function usePortfolioStore() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [archive, setArchive] = useState<ArchiveItem[]>([]);
@@ -192,51 +227,73 @@ export function usePortfolioStore() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      // Re-load data when auth state changes to catch protected documents if any
+      loadData();
     });
     return () => unsubscribe();
   }, []);
 
   const loadData = async () => {
     try {
+      console.log('Fetching portfolio data from Firestore...');
       // 1. Try Firestore First
-      const settingsDoc = await getDoc(doc(db, 'settings', 'global'));
+      const settingsDocRef = doc(db, 'settings', 'global');
+      const settingsDoc = await getDoc(settingsDocRef).catch(e => {
+        handleFirestoreError(e, OperationType.GET, 'settings/global');
+        return null; // unreachable if handleFirestoreError throws
+      });
+
       let firestoreSettings = null;
-      if (settingsDoc.exists()) {
+      if (settingsDoc && settingsDoc.exists()) {
         firestoreSettings = settingsDoc.data() as SiteSettings;
       }
 
-      const projectsSnap = await getDocs(collection(db, 'projects'));
-      let firestoreProjects = projectsSnap.docs.map(d => d.data() as Project);
+      const projectsCollRef = collection(db, 'projects');
+      const projectsSnap = await getDocs(projectsCollRef).catch(e => {
+        handleFirestoreError(e, OperationType.LIST, 'projects');
+        return null;
+      });
+      let firestoreProjects = projectsSnap ? projectsSnap.docs.map(d => d.data() as Project) : [];
       
-      const archiveSnap = await getDocs(collection(db, 'archive'));
-      let firestoreArchive = archiveSnap.docs.map(d => d.data() as ArchiveItem);
+      const archiveCollRef = collection(db, 'archive');
+      const archiveSnap = await getDocs(archiveCollRef).catch(e => {
+        handleFirestoreError(e, OperationType.LIST, 'archive');
+        return null;
+      });
+      let firestoreArchive = archiveSnap ? archiveSnap.docs.map(d => d.data() as ArchiveItem) : [];
 
-      // 2. Fallback to LocalStorage if Firestore is empty or for initial offline speed
+      // 2. Fallback to LocalStorage
       const storedProjects = localStorage.getItem(PROJECTS_KEY);
       const storedArchive = localStorage.getItem(ARCHIVE_KEY);
       const storedSettings = localStorage.getItem(SETTINGS_KEY);
 
       if (firestoreSettings) {
         setSettings({ ...DEFAULT_SETTINGS, ...firestoreSettings });
+        console.log('Loaded settings from Firestore');
       } else if (storedSettings) {
         const parsed = JSON.parse(storedSettings);
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+        console.log('Loaded settings from LocalStorage');
       } else {
         setSettings(DEFAULT_SETTINGS);
       }
 
       if (firestoreProjects.length > 0) {
         setProjects(firestoreProjects.sort((a, b) => b.id.localeCompare(a.id)));
+        console.log('Loaded projects from Firestore');
       } else if (storedProjects) {
         setProjects(JSON.parse(storedProjects));
+        console.log('Loaded projects from LocalStorage');
       } else {
         setProjects(INITIAL_PROJECTS);
       }
 
       if (firestoreArchive.length > 0) {
         setArchive(firestoreArchive);
+        console.log('Loaded archive from Firestore');
       } else if (storedArchive) {
         setArchive(JSON.parse(storedArchive));
+        console.log('Loaded archive from LocalStorage');
       } else {
         setArchive(INITIAL_ARCHIVE);
       }
@@ -244,9 +301,9 @@ export function usePortfolioStore() {
     } catch (error) {
       console.error('Failed to load portfolio data:', error);
       // Final fallback to defaults
-      setProjects(INITIAL_PROJECTS);
-      setArchive(INITIAL_ARCHIVE);
-      setSettings(DEFAULT_SETTINGS);
+      if (projects.length === 0) setProjects(INITIAL_PROJECTS);
+      if (archive.length === 0) setArchive(INITIAL_ARCHIVE);
+      // settings is initialized to DEFAULT_SETTINGS
     } finally {
       setIsLoaded(true);
     }

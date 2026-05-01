@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { usePortfolioStore } from '../store/useStore';
 import { Trash2, Plus, LogOut, Lock } from 'lucide-react';
@@ -12,6 +12,7 @@ import { Project } from '../types';
 import { SiteSettings } from '../store/useStore';
 
 export default function Admin() {
+  console.log('Admin component mounting...');
   const { projects, settings, updateProjects, updateSettings, isLoaded, user, login, logout } = usePortfolioStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -107,8 +108,6 @@ export default function Admin() {
     setEditingProject(newProject);
   };
 
-  if (!isLoaded) return <div className="h-screen flex items-center justify-center font-bold text-brand-accent">01 // LOADING ENGINE</div>;
-
   if (!isAuthorized) {
     return (
       <div className="h-screen flex flex-col items-center justify-center px-4 bg-brand-gray space-y-8">
@@ -121,7 +120,7 @@ export default function Admin() {
           <h1 className="text-3xl font-serif tracking-widest text-brand-accent">STUDIO ACCESS</h1>
           
           <button 
-            onClick={login}
+            onClick={() => login()}
             className="w-full py-5 text-[10px] tracking-[0.5em] bg-black text-white hover:bg-brand-accent transition-all font-bold font-sans rounded-sm"
           >
             GOOGLE AUTHENTICATION
@@ -154,6 +153,8 @@ export default function Admin() {
     );
   }
 
+  if (!isLoaded) return <div className="h-screen flex items-center justify-center font-bold text-brand-accent tracking-[0.4em]">01 // LOADING ENGINE</div>;
+
   return (
     <motion.main 
       initial={{ opacity: 0 }}
@@ -165,7 +166,7 @@ export default function Admin() {
             <h1 className="text-7xl font-serif text-brand-accent">Curatorship</h1>
             <div className="flex flex-col space-y-2">
                <p className="text-[8px] font-bold tracking-widest text-brand-accent/40 uppercase">
-                  {user ? `IDENTITY VERIFIED: ${user.email}` : 'LOCAL SESSION OVERRIDE'}
+                  {user ? `IDENTITY VERIFIED: ${user.email || 'SECURE'}` : 'LOCAL SESSION OVERRIDE'}
                </p>
                <div className="flex space-x-12">
                   <button onClick={() => setActiveTab('projects')} className={`text-[11px] font-bold tracking-[0.3em] transition-all border-b-2 ${activeTab === 'projects' ? 'text-brand-accent border-brand-accent' : 'text-brand-text/50 border-transparent'}`}>01 // PROJECTS</button>
