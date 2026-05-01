@@ -123,8 +123,14 @@ export default function Admin() {
             onClick={async () => {
               try {
                 await login();
-              } catch (e) {
-                alert('로그인 팝업을 열 수 없습니다. 브라우저의 팝업 차단 설정을 확인하거나 Firebase 콘솔에서 도메인이 승인되었는지 확인해주세요.');
+              } catch (e: any) {
+                console.error('Login Error details:', e);
+                const currentOrigin = window.location.origin;
+                alert(`로그인을 시도하는 중 오류가 발생했습니다.\n\n` +
+                      `원인: ${e.message || '알 수 없는 오류'}\n\n` +
+                      `배포된 사이트라면 Firebase 콘솔에서 다음 도메인을 '승인된 도메인'에 추가해야 합니다:\n` +
+                      `${currentOrigin}\n\n` +
+                      `설정 위치: Firebase Console > Auth > Settings > Authorized domains`);
               }
             }}
             className="w-full py-5 text-[10px] tracking-[0.5em] bg-black text-white hover:bg-brand-accent transition-all font-bold font-sans rounded-sm"
