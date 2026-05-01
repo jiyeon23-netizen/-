@@ -52,7 +52,7 @@ export default function Home() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 1 }}
-              className="text-6xl md:text-9xl font-bold mb-8 leading-[1.1] tracking-tighter text-brand-accent whitespace-pre-line"
+              className="text-4xl md:text-6xl font-bold mb-8 leading-[1.1] tracking-tighter text-brand-accent whitespace-pre-line"
             >
               {settings.homeHeroTitle}
             </motion.h1>
@@ -62,7 +62,7 @@ export default function Home() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8, duration: 1 }}
-                className="text-lg md:text-xl font-light leading-relaxed text-brand-text max-w-xl whitespace-pre-line"
+                className="text-sm md:text-base font-light leading-relaxed text-brand-text max-w-xl whitespace-pre-line"
               >
                 {settings.homeIntroText}
               </motion.p>
@@ -85,7 +85,7 @@ export default function Home() {
       <section className="px-8 pb-40">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-24 border-b border-brand-accent/10 pb-12">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-brand-accent whitespace-pre-line">{settings.homeLabelWorks}</h2>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-brand-accent whitespace-pre-line">{settings.homeLabelWorks}</h2>
             <Link to="/projects" className="group flex items-center space-x-3 text-[10px] font-bold tracking-[0.5em] text-brand-accent hover:text-brand-text transition-colors py-4 px-8 border border-brand-accent/20 rounded-full">
               <span>{settings.homeLabelExplore}</span>
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -141,7 +141,7 @@ export default function Home() {
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="text-2xl md:text-5xl font-light leading-snug tracking-tight whitespace-pre-line"
+            className="text-lg md:text-3xl font-light leading-snug tracking-tight whitespace-pre-line"
           >
             {settings.homePhilosophyText}
           </motion.p>
