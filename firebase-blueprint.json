@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global configuration and content for the portfolio website.",
+      "type": "object",
+      "properties": {
+        "siteTitle": { "type": "string" },
+        "siteSubtitle": { "type": "string" },
+        "homeHeroImage": { "type": "string" },
+        "homePhilosophyImage": { "type": "string" },
+        "aboutProfileImage": { "type": "string" },
+        "contactHeroImage": { "type": "string" },
+        "homeHeroSubtitle": { "type": "string" },
+        "homeHeroTitle": { "type": "string" },
+        "homeIntroText": { "type": "string" },
+        "homePhilosophyTitle": { "type": "string" },
+        "homePhilosophyText": { "type": "string" },
+        "aboutName": { "type": "string" },
+        "aboutBirthdate": { "type": "string" },
+        "aboutPhone": { "type": "string" },
+        "aboutEmail": { "type": "string" },
+        "aboutIntro": { "type": "string" },
+        "aboutKeywords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "aboutSections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": { "type": "string" },
+                    "value": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "aboutStatementTitle": { "type": "string" },
+        "aboutStatementText": { "type": "string" },
+        "contactIntro": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "contactInstagram": { "type": "string" },
+        "contactPortfolioUrl": { "type": "string" },
+        "footerLocation": { "type": "string" },
+        "projectLabelBack": { "type": "string" },
+        "projectLabelContext": { "type": "string" },
+        "projectLabelAnalysis": { "type": "string" },
+        "projectLabelConcept": { "type": "string" },
+        "projectLabelScenario": { "type": "string" },
+        "projectLabelPrograms": { "type": "string" },
+        "projectLabelStrategies": { "type": "string" },
+        "projectLabelDate": { "type": "string" },
+        "aboutTitle": { "type": "string" },
+        "projectsTitle": { "type": "string" },
+        "projectsSubtitle": { "type": "string" },
+        "projectsLabelView": { "type": "string" },
+        "contactTitle": { "type": "string" },
+        "navHome": { "type": "string" },
+        "navAbout": { "type": "string" },
+        "navProjects": { "type": "string" },
+        "navContact": { "type": "string" },
+        "homeLabelScroll": { "type": "string" },
+        "homeLabelWorks": { "type": "string" },
+        "homeLabelExplore": { "type": "string" },
+        "homeLabelDiscover": { "type": "string" },
+        "projectsLabelNumber": { "type": "string" },
+        "contactLabelPortfolio": { "type": "string" },
+        "projectLabelNotFound": { "type": "string" },
+        "projectLabelStep": { "type": "string" },
+        "projectLabelZone": { "type": "string" }
+      }
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio work item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "heroImage": { "type": "string" },
+        "context": { "type": "string" },
+        "concept": { "type": "string" },
+        "analysisText": { "type": "string" },
+        "conceptText": { "type": "string" },
+        "scenarioText": { "type": "string" },
+        "programsText": { "type": "string" },
+        "strategiesText": { "type": "string" },
+        "images": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "stats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": "string" }
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "string" },
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "ArchiveItem": {
+      "title": "Archive Item",
+      "description": "Compact project listing for the archive view.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "link": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "settings/global": {
+      "schema": "SiteSettings",
+      "description": "Main site settings."
+    },
+    "projects/{projectId}": {
+      "schema": "Project",
+      "description": "Portfolio projects."
+    },
+    "archive/{archiveId}": {
+      "schema": "ArchiveItem",
+      "description": "Archive items."
+    }
+  }
+}

@@ -6,6 +6,9 @@
 import { useState, useEffect } from 'react';
 import { Project, ArchiveItem } from '../types';
 import { INITIAL_PROJECTS, INITIAL_ARCHIVE } from '../constants';
+import { db, auth } from '../lib/firebase';
+import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from 'firebase/firestore';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
 
 const PROJECTS_KEY = 'portfolio_projects';
 const ARCHIVE_KEY = 'portfolio_archive';
@@ -184,58 +187,149 @@ export function usePortfolioStore() {
   const [archive, setArchive] = useState<ArchiveItem[]>([]);
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loadData = async () => {
     try {
+      // 1. Try Firestore First
+      const settingsDoc = await getDoc(doc(db, 'settings', 'global'));
+      let firestoreSettings = null;
+      if (settingsDoc.exists()) {
+        firestoreSettings = settingsDoc.data() as SiteSettings;
+      }
+
+      const projectsSnap = await getDocs(collection(db, 'projects'));
+      let firestoreProjects = projectsSnap.docs.map(d => d.data() as Project);
+      
+      const archiveSnap = await getDocs(collection(db, 'archive'));
+      let firestoreArchive = archiveSnap.docs.map(d => d.data() as ArchiveItem);
+
+      // 2. Fallback to LocalStorage if Firestore is empty or for initial offline speed
       const storedProjects = localStorage.getItem(PROJECTS_KEY);
       const storedArchive = localStorage.getItem(ARCHIVE_KEY);
       const storedSettings = localStorage.getItem(SETTINGS_KEY);
 
-      if (storedProjects) {
-        setProjects(JSON.parse(storedProjects));
-      } else {
-        setProjects(INITIAL_PROJECTS);
-        localStorage.setItem(PROJECTS_KEY, JSON.stringify(INITIAL_PROJECTS));
-      }
-
-      if (storedArchive) {
-        setArchive(JSON.parse(storedArchive));
-      } else {
-        setArchive(INITIAL_ARCHIVE);
-        localStorage.setItem(ARCHIVE_KEY, JSON.stringify(INITIAL_ARCHIVE));
-      }
-
-      if (storedSettings) {
+      if (firestoreSettings) {
+        setSettings({ ...DEFAULT_SETTINGS, ...firestoreSettings });
+      } else if (storedSettings) {
         const parsed = JSON.parse(storedSettings);
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       } else {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
+        setSettings(DEFAULT_SETTINGS);
       }
+
+      if (firestoreProjects.length > 0) {
+        setProjects(firestoreProjects.sort((a, b) => b.id.localeCompare(a.id)));
+      } else if (storedProjects) {
+        setProjects(JSON.parse(storedProjects));
+      } else {
+        setProjects(INITIAL_PROJECTS);
+      }
+
+      if (firestoreArchive.length > 0) {
+        setArchive(firestoreArchive);
+      } else if (storedArchive) {
+        setArchive(JSON.parse(storedArchive));
+      } else {
+        setArchive(INITIAL_ARCHIVE);
+      }
+
     } catch (error) {
       console.error('Failed to load portfolio data:', error);
-      // Fallback to defaults on error
+      // Final fallback to defaults
       setProjects(INITIAL_PROJECTS);
       setArchive(INITIAL_ARCHIVE);
       setSettings(DEFAULT_SETTINGS);
     } finally {
       setIsLoaded(true);
     }
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
-  const updateProjects = (newProjects: Project[]) => {
+  const updateProjects = async (newProjects: Project[]) => {
     setProjects(newProjects);
     localStorage.setItem(PROJECTS_KEY, JSON.stringify(newProjects));
+    
+    if (auth.currentUser) {
+      try {
+        const batch = writeBatch(db);
+        newProjects.forEach(p => {
+          batch.set(doc(db, 'projects', p.id), p);
+        });
+        await batch.commit();
+      } catch (error) {
+        console.error('Firestore project update failed:', error);
+      }
+    }
   };
 
-  const updateArchive = (newArchive: ArchiveItem[]) => {
+  const updateArchive = async (newArchive: ArchiveItem[]) => {
     setArchive(newArchive);
     localStorage.setItem(ARCHIVE_KEY, JSON.stringify(newArchive));
+
+    if (auth.currentUser) {
+      try {
+        const batch = writeBatch(db);
+        newArchive.forEach(a => {
+          batch.set(doc(db, 'archive', a.id), a);
+        });
+        await batch.commit();
+      } catch (error) {
+        console.error('Firestore archive update failed:', error);
+      }
+    }
   };
 
-  const updateSettings = (newSettings: SiteSettings) => {
+  const updateSettings = async (newSettings: SiteSettings) => {
     setSettings(newSettings);
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+    
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(db, 'settings', 'global'), newSettings);
+      } catch (error) {
+        console.error('Firestore settings update failed:', error);
+      }
+    }
   };
 
-  return { projects, archive, settings, updateProjects, updateArchive, updateSettings, isLoaded };
+  const login = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  return { 
+    projects, 
+    archive, 
+    settings, 
+    updateProjects, 
+    updateArchive, 
+    updateSettings, 
+    isLoaded,
+    user,
+    login,
+    logout
+  };
 }

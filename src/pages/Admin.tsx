@@ -12,13 +12,22 @@ import { Project } from '../types';
 import { SiteSettings } from '../store/useStore';
 
 export default function Admin() {
-  const { projects, settings, updateProjects, updateSettings, isLoaded } = usePortfolioStore();
+  const { projects, settings, updateProjects, updateSettings, isLoaded, user, login, logout } = usePortfolioStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'projects' | 'settings'>('projects');
   
+  // Unified authorization check
+  const isAuthorized = isAuthenticated || (user && user.email === 'jiyeon040223@gmail.com');
+
   // Settings Form State
   const [siteSettings, setSiteSettings] = useState(settings);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setSiteSettings(settings);
+    }
+  }, [isLoaded, settings]);
   
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
@@ -100,16 +109,29 @@ export default function Admin() {
 
   if (!isLoaded) return <div className="h-screen flex items-center justify-center font-bold text-brand-accent">01 // LOADING ENGINE</div>;
 
-  if (!isAuthenticated) {
+  if (!isAuthorized) {
     return (
-      <div className="h-screen flex items-center justify-center px-4 bg-brand-gray">
+      <div className="h-screen flex flex-col items-center justify-center px-4 bg-brand-gray space-y-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-16 border border-brand-accent/10 w-full max-w-md text-center shadow-xl"
+          className="bg-white p-16 border border-brand-accent/10 w-full max-w-md text-center shadow-xl space-y-12"
         >
-          <Lock size={40} className="mx-auto mb-8 text-brand-accent" />
-          <h1 className="text-3xl font-serif mb-12 tracking-widest text-brand-accent">STUDIO ACCESS</h1>
+          <Lock size={40} className="mx-auto text-brand-accent" />
+          <h1 className="text-3xl font-serif tracking-widest text-brand-accent">STUDIO ACCESS</h1>
+          
+          <button 
+            onClick={login}
+            className="w-full py-5 text-[10px] tracking-[0.5em] bg-black text-white hover:bg-brand-accent transition-all font-bold font-sans rounded-sm"
+          >
+            GOOGLE AUTHENTICATION
+          </button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-brand-accent/10"></div></div>
+            <div className="relative flex justify-center text-[8px] uppercase tracking-[0.4em]"><span className="bg-white px-4 text-brand-text/40">OR USE PASSCODE</span></div>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-8">
             <input 
               type="password"
@@ -120,12 +142,14 @@ export default function Admin() {
             />
             <button 
               type="submit"
-              className="w-full py-4 text-[10px] tracking-[0.5em] bg-brand-accent text-white hover:brightness-110 transition-all font-bold"
+              className="w-full py-4 text-[10px] tracking-[0.5em] border border-brand-accent/20 text-brand-accent hover:bg-brand-accent hover:text-white transition-all font-bold"
             >
               GRANT PERMISSION
             </button>
           </form>
         </motion.div>
+        
+        <p className="text-[10px] font-bold text-brand-accent/40 tracking-widest uppercase">Authorized Access Only</p>
       </div>
     );
   }
@@ -139,12 +163,23 @@ export default function Admin() {
       <header className="flex justify-between items-end mb-24">
          <div className="space-y-4">
             <h1 className="text-7xl font-serif text-brand-accent">Curatorship</h1>
-            <div className="flex space-x-12">
-               <button onClick={() => setActiveTab('projects')} className={`text-[11px] font-bold tracking-[0.3em] transition-all border-b-2 ${activeTab === 'projects' ? 'text-brand-accent border-brand-accent' : 'text-brand-text/50 border-transparent'}`}>01 // PROJECTS</button>
-               <button onClick={() => setActiveTab('settings')} className={`text-[11px] font-bold tracking-[0.3em] transition-all border-b-2 ${activeTab === 'settings' ? 'text-brand-accent border-brand-accent' : 'text-brand-text/50 border-transparent'}`}>02 // SITE ASSETS</button>
+            <div className="flex flex-col space-y-2">
+               <p className="text-[8px] font-bold tracking-widest text-brand-accent/40 uppercase">
+                  {user ? `IDENTITY VERIFIED: ${user.email}` : 'LOCAL SESSION OVERRIDE'}
+               </p>
+               <div className="flex space-x-12">
+                  <button onClick={() => setActiveTab('projects')} className={`text-[11px] font-bold tracking-[0.3em] transition-all border-b-2 ${activeTab === 'projects' ? 'text-brand-accent border-brand-accent' : 'text-brand-text/50 border-transparent'}`}>01 // PROJECTS</button>
+                  <button onClick={() => setActiveTab('settings')} className={`text-[11px] font-bold tracking-[0.3em] transition-all border-b-2 ${activeTab === 'settings' ? 'text-brand-accent border-brand-accent' : 'text-brand-text/50 border-transparent'}`}>02 // SITE ASSETS</button>
+               </div>
             </div>
          </div>
-         <button onClick={() => setIsAuthenticated(false)} className="flex items-center space-x-3 text-[10px] font-bold tracking-widest text-brand-text/50 hover:text-red-600 transition-colors">
+         <button 
+            onClick={() => {
+              setIsAuthenticated(false);
+              logout();
+            }} 
+            className="flex items-center space-x-3 text-[10px] font-bold tracking-widest text-brand-text/50 hover:text-red-600 transition-colors"
+         >
             <LogOut size={16} />
             <span>EXIT STUDIO</span>
          </button>

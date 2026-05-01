@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Primitive Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isVerifiedAdmin() {
+      return isSignedIn() && 
+             request.auth.token.email == 'jiyeon040223@gmail.com' && 
+             request.auth.token.email_verified == true;
+    }
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Blueprints
+    function isValidSettings(data) {
+      return data.siteTitle is string && data.siteTitle.size() <= 200 &&
+             data.siteSubtitle is string && data.siteSubtitle.size() <= 200;
+    }
+
+    function isValidProject(data) {
+      return data.id is string && data.id.size() <= 100 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 50;
+    }
+
+    function isValidArchive(data) {
+      return data.id is string && data.id.size() <= 100 &&
+             data.title is string && data.title.size() <= 200;
+    }
+
+    // Collection Rules
+    match /settings/global {
+      allow read: if true;
+      allow write: if isVerifiedAdmin() && isValidSettings(incoming());
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isVerifiedAdmin() && isValidId(projectId) && isValidProject(incoming());
+      allow update: if isVerifiedAdmin() && isValidProject(incoming());
+      allow delete: if isVerifiedAdmin();
+    }
+
+    match /archive/{archiveId} {
+      allow read: if true;
+      allow create: if isVerifiedAdmin() && isValidId(archiveId) && isValidArchive(incoming());
+      allow update: if isVerifiedAdmin() && isValidArchive(incoming());
+      allow delete: if isVerifiedAdmin();
+    }
+  }
+}
