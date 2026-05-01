@@ -1,0 +1,49 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-serif: "Pretendard", sans-serif;
+  
+  --color-brand-green: #2D5A27;
+  --color-brand-white: #FFFFFF;
+  --color-brand-bg: #FFFFFF;
+  --color-brand-text: #1A3018;
+  --color-brand-gray: #F4F7F4;
+  --color-brand-accent: #2D5A27;
+}
+
+@layer base {
+  :root {
+    --color-brand-bg: #FFFFFF;
+    --color-brand-text: #1A3018;
+    --color-brand-accent: #2D5A27;
+    --color-brand-gray: #F4F7F4;
+  }
+
+  body {
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-text);
+    @apply font-sans antialiased;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-brand-text);
+    @apply font-sans font-bold tracking-tight;
+  }
+}
+
+.spatial-scroll-fade {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
