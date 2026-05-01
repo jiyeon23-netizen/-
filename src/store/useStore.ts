@@ -29,6 +29,9 @@ export interface SiteSettings {
   
   // About Page Content
   aboutName: string;
+  aboutBirthdate: string;
+  aboutPhone: string;
+  aboutEmail: string;
   aboutIntro: string;
   aboutKeywords: string[];
   aboutSections: {
@@ -98,6 +101,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
   homePhilosophyText: '공간은 정지된 오브제가 아닌,\n사람의 시선이 흐르는 시간의 무대입니다.',
   
   aboutName: '김지연',
+  aboutBirthdate: '1995.04.02',
+  aboutPhone: '010-0000-0000',
+  aboutEmail: 'jiyeon040223@gmail.com',
   aboutIntro: '공간과 인간 사이의 ‘정서적 교감’을 시퀀스로 설계하며,\n브랜드의 이야기를 물성으로 번안하는 작업을 합니다.',
   aboutKeywords: ['Experience', 'Flow', 'Sensation', 'Immersion', 'Narrative'],
   aboutSections: [

@@ -681,6 +681,30 @@ export default function Admin() {
                       />
                    </div>
                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-brand-accent tracking-widest uppercase">생년월일 (Birthdate)</label>
+                      <input 
+                        className="w-full bg-brand-gray p-4 font-bold outline-none border-b border-brand-accent/10 focus:border-brand-accent"
+                        value={siteSettings.aboutBirthdate}
+                        onChange={e => setSiteSettings({...siteSettings, aboutBirthdate: e.target.value})}
+                      />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-brand-accent tracking-widest uppercase">전화번호 (Phone)</label>
+                      <input 
+                        className="w-full bg-brand-gray p-4 font-bold outline-none border-b border-brand-accent/10 focus:border-brand-accent"
+                        value={siteSettings.aboutPhone}
+                        onChange={e => setSiteSettings({...siteSettings, aboutPhone: e.target.value})}
+                      />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-bold text-brand-accent tracking-widest uppercase">이메일 (Email)</label>
+                      <input 
+                        className="w-full bg-brand-gray p-4 font-bold outline-none border-b border-brand-accent/10 focus:border-brand-accent"
+                        value={siteSettings.aboutEmail}
+                        onChange={e => setSiteSettings({...siteSettings, aboutEmail: e.target.value})}
+                      />
+                   </div>
+                   <div className="space-y-4 md:col-span-2">
                       <label className="text-[10px] font-bold text-brand-accent tracking-widest uppercase">핵심 키워드 (쉼표로 구분)</label>
                       <input 
                         className="w-full bg-brand-gray p-4 font-light outline-none border-b border-brand-accent/10 focus:border-brand-accent"

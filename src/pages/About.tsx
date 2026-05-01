@@ -39,6 +39,28 @@ export default function About() {
                     </span>
                   ))}
                </div>
+
+               <div className="mt-16 border-t border-brand-accent/5 pt-12 space-y-12">
+                  <div className="text-center md:text-left">
+                     <p className="text-[10px] font-bold text-brand-accent/40 tracking-[0.4em] uppercase mb-2">Architect / Designer</p>
+                     <h2 className="text-xl md:text-2xl font-bold text-brand-accent tracking-tighter">{settings.aboutName}</h2>
+                  </div>
+                  
+                  <div className="flex flex-col md:flex-row gap-x-16 gap-y-6">
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-bold text-brand-accent/40 tracking-[0.3em] uppercase">Birthdate</p>
+                        <p className="text-sm font-medium text-brand-text/80">{settings.aboutBirthdate}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-bold text-brand-accent/40 tracking-[0.3em] uppercase">Phone</p>
+                        <p className="text-sm font-medium text-brand-text/80">{settings.aboutPhone}</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[8px] font-bold text-brand-accent/40 tracking-[0.3em] uppercase">Email</p>
+                        <p className="text-sm font-medium text-brand-text/80">{settings.aboutEmail}</p>
+                     </div>
+                  </div>
+               </div>
              </div>
              <div className="flex-1 aspect-[4/5] overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 w-full">
                 <img src={settings.aboutProfileImage} alt="Profile" className="w-full h-full object-cover" />
