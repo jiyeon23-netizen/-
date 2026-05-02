@@ -10,6 +10,7 @@ import { Trash2, Plus, LogOut, Lock } from 'lucide-react';
 import { ADMIN_PASSWORD } from '../constants';
 import { Project } from '../types';
 import { SiteSettings } from '../store/useStore';
+import ImageEditor from '../components/ImageEditor';
 
 export default function Admin() {
   console.log('Admin component mounting...');
@@ -18,6 +19,11 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'projects' | 'settings'>('projects');
   
+  // Image Editor State
+  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
+  const [editCallback, setEditCallback] = useState<((url: string) => void) | null>(null);
+  const [editAspect, setEditAspect] = useState<number>(16/9);
+
   // Unified authorization check
   const isAuthorized = isAuthenticated || (user && user.email === 'jiyeon040223@gmail.com');
 
@@ -41,26 +47,44 @@ export default function Admin() {
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void, aspect: number = 16/9) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         const base64 = await toBase64(file);
-        callback(base64);
+        setImageToEdit(base64);
+        setEditCallback(() => callback);
+        setEditAspect(aspect);
       } catch (error) {
         console.error('File upload failed:', error);
       }
     }
+    // Reset file input so same file can be selected again
+    e.target.value = '';
   };
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editingProject) return;
     const files = Array.from(e.target.files || []);
-    const base64s = await Promise.all(files.map((file: File) => toBase64(file)));
-    setEditingProject({
-      ...editingProject,
-      visuals: [...(editingProject.visuals || []), ...base64s]
-    });
+    if (files.length === 0) return;
+    
+    // For gallery, we edit one by one if there are multiple, or just provide a simplified flow
+    // Here we'll take the first one and open editor, user can repeat
+    const file = files[0] as File;
+    try {
+      const base64 = await toBase64(file);
+      setImageToEdit(base64);
+      setEditAspect(1); // Gallery images often look good 1:1 or 4:5
+      setEditCallback(() => (url: string) => {
+        setEditingProject({
+          ...editingProject,
+          visuals: [...(editingProject.visuals || []), url]
+        });
+      });
+    } catch (error) {
+      console.error('Gallery upload failed:', error);
+    }
+    e.target.value = '';
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -283,7 +307,7 @@ export default function Admin() {
                           type="file"
                           accept="image/*"
                           className="w-full bg-brand-gray p-4 text-[10px] font-bold tracking-widest uppercase cursor-pointer"
-                          onChange={e => handleFileUpload(e, (url) => setEditingProject({...editingProject, heroImage: url}))}
+                          onChange={e => handleFileUpload(e, (url) => setEditingProject({...editingProject, heroImage: url}), 16/9)}
                         />
                         {editingProject.heroImage && (
                           <img src={editingProject.heroImage} alt="Hero" className="w-full h-32 object-cover border border-brand-accent/10" />
@@ -544,7 +568,7 @@ export default function Admin() {
                        type="file"
                        accept="image/*"
                        className="w-full bg-brand-gray p-4 text-[10px] font-bold tracking-widest uppercase cursor-pointer"
-                       onChange={e => handleFileUpload(e, (url) => setSiteSettings({...siteSettings, [item.key]: url}))}
+                       onChange={e => handleFileUpload(e, (url) => setSiteSettings({...siteSettings, [item.key]: url}), 16/9)}
                      />
                      <div className="aspect-video bg-brand-gray border border-brand-accent/5 overflow-hidden grayscale">
                         <img src={siteSettings[item.key as keyof SiteSettings] as string} alt="Preview" className="w-full h-full object-cover" />
@@ -871,6 +895,21 @@ export default function Admin() {
             </button>
           </div>
         </div>
+      )}
+      {imageToEdit && editCallback && (
+        <ImageEditor 
+          image={imageToEdit}
+          aspect={editAspect}
+          onSave={(croppedImage) => {
+            editCallback(croppedImage);
+            setImageToEdit(null);
+            setEditCallback(null);
+          }}
+          onCancel={() => {
+            setImageToEdit(null);
+            setEditCallback(null);
+          }}
+        />
       )}
     </motion.main>
   );

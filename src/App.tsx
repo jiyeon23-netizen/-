@@ -6,6 +6,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
+import { PortfolioProvider } from './store/useStore';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -35,11 +36,13 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="bg-brand-bg min-h-screen text-brand-text">
-        <Navigation />
-        <AnimatedRoutes />
-      </div>
-    </BrowserRouter>
+    <PortfolioProvider>
+      <BrowserRouter>
+        <div className="bg-brand-bg min-h-screen text-brand-text">
+          <Navigation />
+          <AnimatedRoutes />
+        </div>
+      </BrowserRouter>
+    </PortfolioProvider>
   );
 }
